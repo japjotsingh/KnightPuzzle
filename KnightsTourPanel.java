@@ -1,6 +1,7 @@
 /**
  * Created by lawzoom on 3/23/17.
  */
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -26,11 +27,12 @@ public class KnightsTourPanel extends JPanel {
     JButton randomMove, randCont, thoughtfulMove, thoughtCont;
 
     public KnightsTourPanel(int w, int h) {
-        this.setPreferredSize(new Dimension(w,h));
+        this.setPreferredSize(new Dimension(w, h));
         this.setBackground(Color.green);
         addMouseListener();
         setupBoard();
         setupKnight();
+        System.out.println("starting Random Moves");
 //        startRandomMove();
         //startThoughtfulMove();
     }
@@ -46,7 +48,7 @@ public class KnightsTourPanel extends JPanel {
         values = new int[8][8];
 
         randomMove = new JButton();
-        randomMove.setText("Random Move");
+        randomMove.setText("Start Random Moves");
         randomMove.setBounds(20, 550, 175, 45);
         randomMove.addActionListener(new ActionListener() {
             @Override
@@ -59,7 +61,7 @@ public class KnightsTourPanel extends JPanel {
         randomMove.setVisible(true);
 
         thoughtfulMove = new JButton();
-        thoughtfulMove.setText("Thoughful Move");
+        thoughtfulMove.setText("Start Thoughful Moves");
         thoughtfulMove.setBounds(220, 550, 175, 45);
         thoughtfulMove.addActionListener(new ActionListener() {
             @Override
@@ -84,7 +86,6 @@ public class KnightsTourPanel extends JPanel {
                 num += 1;
             }
         }
-
         return num;
     }
 
@@ -104,8 +105,8 @@ public class KnightsTourPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 super.mouseClicked(mouseEvent);
-                int row = mouseEvent.getX()/Cell.CELL_HEIGHT;
-                int col = mouseEvent.getY()/Cell.CELL_WIDTH;
+                int col = mouseEvent.getX() / Cell.CELL_HEIGHT;
+                int row = mouseEvent.getY() / Cell.CELL_WIDTH;
                 System.out.println("Row: " + row + "\tCol: " + col);
             }
         });
@@ -140,6 +141,7 @@ public class KnightsTourPanel extends JPanel {
         }
         knight.draw(g);
     }
+
     /* make random move just selects a new location at random
      * if the knight is trapped (no new locations to move to)
      * then false is returned.  Otherwise, true is returned.
@@ -148,18 +150,35 @@ public class KnightsTourPanel extends JPanel {
     public boolean makeRandomMove() {
         int[] rows = {-2, -2, -1, -1, 1, 1, 2, 2};
         int[] cols = {-1, 1, -2, 2, -2, 2, -1, 1};
-        int rand = (int)(Math.random()*8);
-        while (knight.getRow() - rows[rand] < 0 || knight.getRow() - rows[rand] >= board.length ||
-                knight.getCol() - cols[rand] < 0 || knight.getRow() - cols[rand] >= board[0].length) {
-            rand = (int)(Math.random()*8);
+
+        int rand = (int) (Math.random() * 8);
+
+        int newRow = knight.getRow() - rows[rand];
+        int newCol = knight.getCol() - cols[rand];
+
+        while (newRow < 0 || newRow >= board.length ||
+                newCol < 0 || newCol >= board[0].length) {
+            rand = (int) (Math.random() * 8);
         }
 
-        knight.move(knight.getRow()-rows[rand], knight.getCol()-cols[rand]);
+//        System.out.println(rand);
+//        System.out.println("KR: " + knight.getRow() + " KC: " + knight.getCol());
+//        System.out.println("NR: " + newRow + " NC: " + newCol );
+
+        knight.move(newRow, newCol);
         board[knight.getRow()][knight.getCol()].setMoved();
-        System.out.println("R: " + knight.getRow() + "\tC: " + knight.getCol());
         repaint();
+
+//        if(knight.getRow()>0 && knight.getRow()<=board.length && knight.getCol()>0 && knight.getCol()<board[0].length) {
+//            knight.move(rows[rand], cols[rand]);
+//            board[knight.getRow()][knight.getCol()].setMoved();
+//            System.out.println("R: " + knight.getRow() + "C: " + knight.getCol());
+//            repaint();
+//        }
+
         return false;
     }
+
     /* make a move to a new location that ensures the best chance
      * for a complete traversal of the board.
      * if the knight is trapped (no new locations to move to)
@@ -171,8 +190,8 @@ public class KnightsTourPanel extends JPanel {
         int min = Integer.MAX_VALUE;
         int bestIdx = -1;
         for (int i = 0; i < rows.length; i++) {
-            if (knight.getRow()-rows[i] >= 0 && knight.getRow()-rows[i] < board.length &&
-                    knight.getCol()-cols[i] >= 0 && knight.getCol()-cols[i] < board[0].length) {
+            if (knight.getRow() - rows[i] >= 0 && knight.getRow() - rows[i] < board.length &&
+                    knight.getCol() - cols[i] >= 0 && knight.getCol() - cols[i] < board[0].length) {
                 int cost = values[knight.getRow() - rows[i]][knight.getCol() - cols[i]];
                 values[knight.getRow() - rows[i]][knight.getCol() - cols[i]] -= 1;
                 if (cost < min && cost != MOVED) {
@@ -183,7 +202,7 @@ public class KnightsTourPanel extends JPanel {
         }
 
         if (bestIdx != -1) {
-            knight.move(knight.getRow()-rows[bestIdx], knight.getCol()-cols[bestIdx]);
+            knight.move(knight.getRow() - rows[bestIdx], knight.getCol() - cols[bestIdx]);
             board[knight.getRow()][knight.getCol()].setMoved();
             values[knight.getRow()][knight.getCol()] = MOVED;
         } else {

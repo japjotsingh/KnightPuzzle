@@ -28,7 +28,7 @@ public class KnightsTourControlPanel extends JPanel {
      * it!  You can also bind key events to the buttons and sliders, as well
      */
     private void setUpButtonsAndSliders() {
-        p = new KnightsTourPanel(800, 600);
+//        p = new KnightsTourPanel(800, 600);
         randomMove = new JButton();
         randomMove.setText("Random Move");
         randomMove.setBounds(20, 700, 175, 45);
@@ -41,6 +41,7 @@ public class KnightsTourControlPanel extends JPanel {
 //        this.setLayout(null);
         add(randomMove);
         randomMove.setVisible(true);
+
 
         randCont = new JButton();
         randCont.setText("Keep Moving Randomly!");
