@@ -32,7 +32,7 @@ public class KnightsTourPanel extends JPanel {
         addMouseListener();
         setupBoard();
         setupKnight();
-        System.out.println("starting Random Moves");
+
 //        startRandomMove();
         //startThoughtfulMove();
     }
@@ -113,7 +113,7 @@ public class KnightsTourPanel extends JPanel {
     }
 
     public void startRandomMove() {
-        new Timer(500, new ActionListener() {
+        new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 makeRandomMove();
@@ -148,6 +148,7 @@ public class KnightsTourPanel extends JPanel {
      * The knight's location should be updated and the
      */
     public boolean makeRandomMove() {
+
         int[] rows = {-2, -2, -1, -1, 1, 1, 2, 2};
         int[] cols = {-1, 1, -2, 2, -2, 2, -1, 1};
 
@@ -159,6 +160,8 @@ public class KnightsTourPanel extends JPanel {
         while (newRow < 0 || newRow >= board.length ||
                 newCol < 0 || newCol >= board[0].length) {
             rand = (int) (Math.random() * 8);
+            newRow = knight.getRow() - rows[rand];
+            newCol = knight.getCol() - cols[rand];
         }
 
 //        System.out.println(rand);
@@ -167,6 +170,7 @@ public class KnightsTourPanel extends JPanel {
 
         knight.move(newRow, newCol);
         board[knight.getRow()][knight.getCol()].setMoved();
+        System.out.println("Knight Moved to: " + "[ " + knight.getRow() + " " + knight.getCol() + " ]");
         repaint();
 
 //        if(knight.getRow()>0 && knight.getRow()<=board.length && knight.getCol()>0 && knight.getCol()<board[0].length) {
@@ -185,8 +189,10 @@ public class KnightsTourPanel extends JPanel {
      * then false is returned.  Otherwise, true is returned.
      */
     public boolean makeThoughtfulMove() {
+
         int[] rows = {-2, -2, -1, -1, 1, 1, 2, 2};
         int[] cols = {-1, 1, -2, 2, -2, 2, -1, 1};
+
         int min = Integer.MAX_VALUE;
         int bestIdx = -1;
         for (int i = 0; i < rows.length; i++) {

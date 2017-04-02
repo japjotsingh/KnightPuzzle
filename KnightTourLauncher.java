@@ -20,7 +20,7 @@ public class KnightTourLauncher {
         JFrame frame = new JFrame("Knight's Tour!");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new KnightsTourPanel(WIDTH,HEIGHT), BorderLayout.CENTER);
-        frame.add(new KnightsTourControlPanel(WIDTH,HEIGHT/3), BorderLayout.SOUTH);
+//        frame.add(new KnightsTourControlPanel(WIDTH,HEIGHT/3), BorderLayout.SOUTH);
         frame.pack();
         frame.setVisible(true);
     }
