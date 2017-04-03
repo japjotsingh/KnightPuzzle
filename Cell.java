@@ -12,6 +12,8 @@ public class Cell {
     private Image image;
     public static int CELL_WIDTH = 50;
     public static int CELL_HEIGHT = 50;
+    boolean wasVisited = false;
+    public int countVisited;
 
 
     Cell(int row, int col) {
@@ -31,8 +33,14 @@ public class Cell {
         }
     }
 
+    public void setCountVisited(int i){
+        countVisited = i;
+    }
+
+
     public void setMoved() {
         URL url = Cell.class.getResource("img/moved.jpg");
+        wasVisited = true;
         try {
             image = ImageIO.read(url);
         } catch (Exception e) {
@@ -42,6 +50,8 @@ public class Cell {
 
     public void draw(Graphics g) {
         g.drawImage(image, x, y, CELL_WIDTH, CELL_HEIGHT, null);
+        if(countVisited>0)
+         g.drawString(Integer.toString(countVisited), x+20, y+30);
     }
 }
 
