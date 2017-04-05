@@ -48,9 +48,27 @@ public class Cell {
         }
     }
 
+    public void setUnMoved() {
+        URL url = Cell.class.getResource("img/cell.png");
+        wasVisited = false;
+        try {
+            image = ImageIO.read(url);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean wasVisited() {
+        return wasVisited;
+    }
+
+    public void setWasVisited(boolean a){
+        wasVisited = a;
+    }
+
     public void draw(Graphics g) {
         g.drawImage(image, x, y, CELL_WIDTH, CELL_HEIGHT, null);
-        if(countVisited>0)
+        if(countVisited>0 || wasVisited)
          g.drawString(Integer.toString(countVisited), x+20, y+30);
     }
 }

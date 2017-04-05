@@ -13,13 +13,9 @@ import javax.swing.*;
 
 public class KnightsTourControlPanel extends JPanel {
 
-    JButton randomMove, randCont, thoughtfulMove, thoughtCont;
-    KnightsTourPanel p;
-
     public KnightsTourControlPanel(int w, int h) {
         this.setPreferredSize(new Dimension(w, h));
         this.setBackground(Color.orange);
-        setUpButtonsAndSliders();
     }
 
     /* Add all the buttons and sliders used to control this Knight's tour.
@@ -28,33 +24,7 @@ public class KnightsTourControlPanel extends JPanel {
      * it!  You can also bind key events to the buttons and sliders, as well
      */
     private void setUpButtonsAndSliders() {
-//        p = new KnightsTourPanel(800, 600);
-        randomMove = new JButton();
-        randomMove.setText("Random Move");
-        randomMove.setBounds(20, 700, 175, 45);
-        randomMove.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                p.startThoughtfulMove();
-            }
-        });
-//        this.setLayout(null);
-        add(randomMove);
-        randomMove.setVisible(true);
-
-
-        randCont = new JButton();
-        randCont.setText("Keep Moving Randomly!");
-        randCont.setBounds(20, 750, 175, 45);
-        randCont.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Cont Rand Move");
-            }
-        });
-//        this.setLayout(null);
-        add(randCont);
-        randCont.setVisible(true);
+//
     }
 }
 

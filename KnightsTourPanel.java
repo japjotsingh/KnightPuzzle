@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -24,33 +25,33 @@ public class KnightsTourPanel extends JPanel {
 
     // what private data is needed?
     private Cell[][] board;
-    private int[][] values;
     private Knight knight;
-    public static final int MOVED = 100000;
     JButton randomMove, randCont, thoughtfulMove, thoughtCont;
-    private int counts = 1;
+    private boolean clicked = true;
+    int N = 8;
+    int N2 = 8;
 
     public KnightsTourPanel(int w, int h) {
         this.setPreferredSize(new Dimension(w, h));
         this.setBackground(Color.green);
         addMouseListener();
         setupBoard();
-        setupKnight();
-
-//        startRandomMove();
-        //startThoughtfulMove();
+        setupKnight(0,0);
+        repaint();
     }
 
     private void setupBoard() {
-        board = new Cell[8][8];
+        //make changeable size
+        board = new Cell[N][N2];
         for (int r = 0; r < board.length; r++) {
             for (int c = 0; c < board[r].length; c++) {
                 board[r][c] = new Cell(r, c);
             }
         }
+        setupButtons();
+    }
 
-        values = new int[8][8];
-
+    public void setupButtons() {
         randomMove = new JButton();
         randomMove.setText("Start Random Moves");
         randomMove.setBounds(20, 550, 175, 45);
@@ -71,37 +72,28 @@ public class KnightsTourPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("making thoughtful Moves");
-                makeThoughtfulMove(0);
-//                startThoughtfulMove();
+                makeThoughtfulMove();
+                startThoughtfulMove();
             }
         });
         this.setLayout(null);
         add(thoughtfulMove);
         thoughtfulMove.setVisible(true);
-
     }
 
-    private int calculatePossibilities(int r, int c) {
-        int[] rows = {-2, -2, -1, -1, 1, 1, 2, 2};
-        int[] cols = {-1, 1, -2, 2, -2, 2, -1, 1};
-        int num = 0;
-
-        for (int i = 0; i < rows.length; i++) {
-            if (r - rows[i] >= 0 && r - rows[i] < board.length &&
-                    c - cols[i] >= 0 && c - cols[i] < board[0].length) {
-                num += 1;
-            }
-        }
-        return num;
-    }
-
-    private void setupKnight() {
-        int r = 0;
-        int c = 0;
+    private void setupKnight(int r, int c) {
+        //make based off mouse click
         knight = new Knight(r, c);
         board[r][c].setMoved();
-        board[r][c].setCountVisited(counts);
-        values[r][c] = MOVED;
+        board[r][c].setCountVisited(knight.getMovei());
+        for (int x = 0; x < board.length; x++) {
+            for (int y = 0; y < board[0].length; y++) {
+                if(board[x][y] != board[r][c]){
+                    board[x][y].setWasVisited(false);
+                    board[x][y].setUnMoved();
+                }
+            }
+        }
     }
 
     // add the mouse listener.  This will only work for the
@@ -111,12 +103,28 @@ public class KnightsTourPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
-                super.mouseClicked(mouseEvent);
-                int col = mouseEvent.getX() / Cell.CELL_HEIGHT;
-                int row = mouseEvent.getY() / Cell.CELL_WIDTH;
-                System.out.println("Row: " + row + "\tCol: " + col);
+                if(clicked) {
+                    super.mouseClicked(mouseEvent);
+                    int col = mouseEvent.getX() / Cell.CELL_HEIGHT;
+                    int row = mouseEvent.getY() / Cell.CELL_WIDTH;
+                    System.out.println("Row: " + row + "\tCol: " + col);
+                    setupKnight(row, col);
+                    clicked = !clicked;
+                    repaint();
+                }
             }
         });
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        for (int r = 0; r < board.length; r++) {
+            for (int c = 0; c < board[r].length; c++) {
+                //System.out.println("R: " + r + " C: " + c);
+                board[r][c].draw(g);
+            }
+        }
+        knight.draw(g);
     }
 
     public void startRandomMove() {
@@ -128,30 +136,21 @@ public class KnightsTourPanel extends JPanel {
         }).start();
     }
 
+    int bazinga = 0;
+
     public void startThoughtfulMove() {
         new Timer(100, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                makeThoughtfulMove(0);
+                smartMove();
             }
         }).start();
     }
 
-    public void paintComponent(Graphics g) {
-//        counts++;
-        String no = Integer.toString(counts);
-        super.paintComponent(g);
-        // stuff to draw the board and knight
-        for (int r = 0; r < board.length; r++) {
-            for (int c = 0; c < board[r].length; c++) {
-                //System.out.println("R: " + r + " C: " + c);
-                board[r][c].draw(g);
-            }
-        }
-        knight.draw(g);
-//        g.drawString(no, knight.getCol()*50, knight.getRow()*50);
-
-
+    private void smartMove() {
+        knight.move(rLocs.get(knight.getMovei()), cLocs.get(knight.getMovei()), board);
+        board[knight.getRow()][knight.getCol()].setCountVisited(knight.getMovei());
+        repaint();
     }
 
     /* make random move just selects a new location at random
@@ -159,7 +158,6 @@ public class KnightsTourPanel extends JPanel {
      * then false is returned.  Otherwise, true is returned.
      * The knight's location should be updated and the
      */
-
     public boolean makeRandomMove() {
 
         int[] rows = {-2, -2, -1, -1, 1, 1, 2, 2};
@@ -179,38 +177,16 @@ public class KnightsTourPanel extends JPanel {
             newCol = knight.getCol() - cols[rand];
             count++;
 
-            if (count > 100) {
-                int result = JOptionPane.showConfirmDialog(null, "Random Move has run out of places to go!" + "\n Reset Board?");
-                if (result == JOptionPane.YES_OPTION) {
-                    System.out.println("Clear Screen");
-                    return false;
-                } else {
-                    System.out.println("leave board as is close message");
-                }
-                return false;
-            }
+//            if (count > 100) {
+//                int result = JOptionPane.showConfirmDialog(null, "Random Move has run out of places to go!" + "\n Reset Board?");
+//                return false;
+//            }
         }
 
-
-//        System.out.println(rand);
-//        System.out.println("KR: " + knight.getRow() + " KC: " + knight.getCol());
-//        System.out.println("NR: " + newRow + " NC: " + newCol );
-
-        knight.move(newRow, newCol);
-        board[knight.getRow()][knight.getCol()].setMoved();
-        counts++;
-        board[knight.getRow()][knight.getCol()].setCountVisited(counts);
-        System.out.println("Knight Moved to: " + "[ " + knight.getRow() + " " + knight.getCol() + " ]");
+        knight.move(newRow, newCol, board);
+        board[knight.getRow()][knight.getCol()].setCountVisited(knight.getMovei());
+//        System.out.println("Knight Moved to: " + "[ " + knight.getRow() + " " + knight.getCol() + " ]");
         repaint();
-
-
-//        if(knight.getRow()>0 && knight.getRow()<=board.length && knight.getCol()>0 && knight.getCol()<board[0].length) {
-//            knight.move(rows[rand], cols[rand]);
-//            board[knight.getRow()][knight.getCol()].setMoved();
-//            System.out.println("R: " + knight.getRow() + "C: " + knight.getCol());
-//            repaint();
-//        }
-
         return false;
     }
 
@@ -220,83 +196,83 @@ public class KnightsTourPanel extends JPanel {
      * then false is returned.  Otherwise, true is returned.
      */
 
-    public boolean checkWorks(int option) {
-        int[] rows = {-2, -2, -1, -1, 1, 1, 2, 2};
-        int[] cols = {-1, 1, -2, 2, -2, 2, -1, 1};
-        int newRow = knight.getRow() - rows[option];
-        int newCol = knight.getCol() - cols[option];
-
-        int count = 0;
-
-        while (newRow < 0 || newRow >= board.length ||
-                newCol < 0 || newCol >= board[0].length || board[newRow][newCol].wasVisited) {
-            option++;
-            newRow = knight.getRow() - rows[option];
-            newCol = knight.getCol() - cols[option];
-            count++;
-
-            if(count >100){
-                return false;
-            }
-        }
-
-        return true;
-
+    public boolean isFair(int x, int y, int sol[][]) {
+        return (x >= 0 && x < N && y >= 0 && y < N && sol[x][y] == -1);
     }
 
-    public boolean makeThoughtfulMove(int option) {
+    private boolean solveTour(int x, int y, int movei, int sol[][], int[] xMoves, int[] yMoves) {
+        int k, nextX, nextY;
 
-        //0-7
-        int[] rows = {-2, -2, -1, -1, 1, 1, 2, 2};
-        int[] cols = {-1, 1, -2, 2, -2, 2, -1, 1};
 
-        System.out.println(checkWorks(5));
+        if (movei == N * N2) {
+            return true;
+        }
 
-//        while (checkWorks(option)) {
-//            System.out.println("checkWorks");
-//            System.out.println(rows[option] + " " + cols[option]);
-//            System.out.println(knight.getRow() + " " + knight.getCol());
-//            knight.move(rows[option], cols[option]);
-//            System.out.println(knight.getRow() + " " + knight.getCol());
-//
-//            checkWorks(option);
-//        }
-//
-//        if (!checkWorks(option)) {
-//            option++;
-//            makeThoughtfulMove(option);
-//        } else {
-//            System.out.println("something failed");
-//        }
-
-        // below is what David and Rishab worked on in class when I was absent, it worked for all places but disregarded the restriction of
-        //only going to each spot once, the code for going to each spot only once is above^^
-//        int min = Integer.MAX_VALUE;
-//        int bestIdx = -1;
-//        for (int i = 0; i < rows.length; i++) {
-//            if (knight.getRow() - rows[i] >= 0 && knight.getRow() - rows[i] < board.length &&
-//                    knight.getCol() - cols[i] >= 0 && knight.getCol() - cols[i] < board[0].length) {
-//                int cost = values[knight.getRow() - rows[i]][knight.getCol() - cols[i]];
-//                values[knight.getRow() - rows[i]][knight.getCol() - cols[i]] -= 1;
-//                if (cost < min && cost != MOVED) {
-//                    min = cost;
-//                    bestIdx = i;
-//                }
-//            }
-//        }
-//
-//        if (bestIdx != -1) {
-//            knight.move(knight.getRow() - rows[bestIdx], knight.getCol() - cols[bestIdx]);
-//            board[knight.getRow()][knight.getCol()].setMoved();
-//            values[knight.getRow()][knight.getCol()] = MOVED;
-//        } else {
-//            System.out.println("No more possible moves!");
-//        }
-//
-//        repaint();
+        for (int g = 0; g < 8; g++) {
+            nextX = x + xMoves[g];
+            nextY = y + yMoves[g];
+            if (isFair(nextX, nextY, sol)) {
+                sol[nextX][nextY] = movei;
+                if (solveTour(nextX, nextY, movei + 1, sol, xMoves, yMoves)) {
+                    return true;
+                } else {
+                    sol[nextX][nextY] = -1;
+                }
+            }
+        }
         return false;
     }
 
+
+    public boolean makeThoughtfulMove() {
+
+        int sol[][] = new int[N][N2];
+
+        for (int x = 0; x < N; x++) {
+            for (int y = 0; y < N2; y++) {
+                sol[x][y] = -1;
+            }
+        }
+
+        int xMoves[] = {2, 1, -1, -2, -2, -1, 1, 2};
+        int yMoves[] = {1, 2, 2, 1, -1, -2, -2, -1};
+
+        sol[knight.getRow()][knight.getCol()] = 0;
+
+        if (!solveTour(knight.getX(), knight.getY(), 1, sol, xMoves, yMoves)) {
+            System.out.println("No Solution");
+            return false;
+        } else {
+            printSol(sol);
+        }
+        return true;
+    }
+
+    int countraz = 1;
+
+    ArrayList<Integer> rLocs = new ArrayList<Integer>();
+    ArrayList<Integer> cLocs = new ArrayList<Integer>();
+
+    public void printSol(int[][] sol) {
+        for (int i = 0; i < sol.length; i++) {
+            for (int j = 0; j < sol[0].length; j++) {
+                System.out.print(sol[i][j] + " ");
+            }
+            System.out.println();
+        }
+
+        while (countraz < 64) {
+            for (int y = 0; y < sol.length; y++) {
+                for (int x = 0; x < sol[0].length; x++) {
+                    if (sol[y][x] == countraz) {
+                        cLocs.add(x);
+                        rLocs.add(y);
+                        countraz++;
+                    }
+                }
+            }
+        }
+    }
 
 }
 

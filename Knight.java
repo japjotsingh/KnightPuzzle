@@ -12,6 +12,7 @@ public class Knight {
     private Image image;
     private int CELL_WIDTH = 50;
     private int CELL_HEIGHT = 50;
+    private int movei;
 
     Knight(int row, int col) {
         this.row = row;
@@ -19,6 +20,7 @@ public class Knight {
         x = col * CELL_WIDTH;
         y = row * CELL_HEIGHT;
         getImage();
+        movei = 0;
     }
 
     private void getImage() {
@@ -46,11 +48,21 @@ public class Knight {
         return this.row;
     }
 
-    public void move(int row, int col) {
+    public void move(int row, int col, Cell board[][]) {
         this.row = row;
         this.col = col;
         x = col * CELL_WIDTH;
         y = row * CELL_HEIGHT;
+        board[row][col].setMoved();
+        movei++;
+    }
+
+    public int getMovei(){
+        return movei;
+    }
+
+    public void setMovei(int i){
+        movei = i;
     }
 
     public void draw(Graphics g) {
